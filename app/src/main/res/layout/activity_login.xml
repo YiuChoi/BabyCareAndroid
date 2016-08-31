@@ -41,7 +41,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
-            android:id="@+id/email_login_form"
+            android:id="@+id/login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -52,11 +52,10 @@
                 android:layout_margin="20dp">
 
                 <EditText
-                    android:id="@+id/email"
+                    android:id="@+id/username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_username"
-                    android:inputType="textEmailAddress"
                     android:maxLines="1"
                     android:singleLine="true"/>
 
@@ -82,7 +81,7 @@
             </android.support.design.widget.TextInputLayout>
 
             <Button
-                android:id="@+id/email_sign_in_button"
+                android:id="@+id/btn_sign_in"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -91,6 +90,17 @@
                 android:text="@string/action_sign_in"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_register"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="20dp"
+                android:linksClickable="true"
+                android:text="没有账号？现在注册"
+                android:textColor="@android:color/holo_blue_light"
+                android:textSize="16sp"/>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

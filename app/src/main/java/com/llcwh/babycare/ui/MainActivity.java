@@ -1,7 +1,9 @@
-package com.llcwh.babycare;
+package com.llcwh.babycare.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.llcwh.babycare.R;
 
 public class MainActivity extends AppCompatActivity {
 

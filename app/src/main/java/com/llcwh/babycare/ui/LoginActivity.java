@@ -1,8 +1,7 @@
-package com.llcwh.babycare;
+package com.llcwh.babycare.ui;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -12,12 +11,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.jaeger.library.StatusBarUtil;
+import com.llcwh.babycare.Const;
+import com.llcwh.babycare.R;
 import com.llcwh.babycare.api.LlcService;
 import com.llcwh.babycare.model.User;
+import com.llcwh.babycare.ui.base.BaseActivity;
 
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     @BindView(R.id.username)
     EditText et_username;
@@ -110,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onError(Throwable e) {
                             progressView.dismiss();
-                            Toast.makeText(LoginActivity.this, "登录失败:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            showToast("登录失败:" + e.getMessage());
                             e.printStackTrace();
                         }
 

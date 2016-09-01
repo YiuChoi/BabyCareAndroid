@@ -14,11 +14,7 @@ public class BaseActivity extends AppCompatActivity {
 
 
     public void showToast(String msg) {
-        if (mToast == null) {
-            mToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-            mToast.show();
-        } else {
-            mToast.setText(msg);
-        }
+        mToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        mToast.show();
     }
 }

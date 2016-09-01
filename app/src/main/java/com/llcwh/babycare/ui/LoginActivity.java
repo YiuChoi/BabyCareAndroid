@@ -1,12 +1,14 @@
 package com.llcwh.babycare.ui;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,9 +23,11 @@ import com.llcwh.babycare.model.User;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import okhttp3.ResponseBody;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -39,6 +43,10 @@ public class LoginActivity extends BaseActivity {
     Button btn_sign_in;
     @BindView(R.id.login_form)
     View mLoginFormView;
+    @BindView(R.id.tv_register)
+    TextView tv_register;
+
+    AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,17 +65,45 @@ public class LoginActivity extends BaseActivity {
                 return false;
             }
         });
-
-        btn_sign_in.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-
     }
 
-    private void attemptLogin() {
+    @OnClick(R.id.tv_register)
+    public void click() {
+        alertDialog = new AlertDialog.Builder(this).setPositiveButton("完成注册", null).create();
+        View custom = LayoutInflater.from(this).inflate(R.layout.dialog_register, null, false);
+        alertDialog.setView(custom);
+        final EditText et_re_username = (EditText) custom.findViewById(R.id.et_username);
+        final EditText et_re_password = (EditText) custom.findViewById(R.id.et_password);
+        final EditText et_replay_password = (EditText) custom.findViewById(R.id.et_replay_password);
+        alertDialog.setTitle("注册");
+        alertDialog.setCancelable(false);
+        alertDialog.show();
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (et_re_username.getText().toString().isEmpty()){
+                    showToast("手机号码不能为空");
+                    return;
+                }
+                if (et_re_password.getText().toString().isEmpty()){
+                    showToast("密码不能为空");
+                    return;
+                }
+                if (!et_re_password.getText().toString().equals(et_replay_password.getText().toString())){
+                    showToast("两次密码不匹配");
+                    return;
+                }
+                final ProgressDialog progressView = new ProgressDialog(LoginActivity.this);
+                progressView.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressView.setMessage("正在登录...");
+                progressView.setCancelable(false);
+                progressView.show();
+            }
+        });
+    }
+
+    @OnClick(R.id.btn_sign_in)
+    public void attemptLogin() {
         et_username.setError(null);
         et_password.setError(null);
 
@@ -76,12 +112,6 @@ public class LoginActivity extends BaseActivity {
 
         boolean cancel = false;
         View focusView = null;
-
-        if (TextUtils.isEmpty(password)) {
-            et_password.setError(getString(R.string.error_field_required));
-            focusView = et_password;
-            cancel = true;
-        }
 
         if (TextUtils.isEmpty(username)) {
             et_username.setError(getString(R.string.error_field_required));
@@ -127,6 +157,17 @@ public class LoginActivity extends BaseActivity {
                             }
                         }
                     });
+        }
+    }
+
+    //  关键部分在这里
+    private void canCloseDialog(DialogInterface dialogInterface, boolean close) {
+        try {
+            Field field = dialogInterface.getClass().getSuperclass().getDeclaredField("mShowing");
+            field.setAccessible(true);
+            field.set(dialogInterface, close);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

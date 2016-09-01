@@ -22,6 +22,9 @@ import com.llcwh.babycare.api.LlcService;
 import com.llcwh.babycare.model.User;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -81,23 +84,60 @@ public class LoginActivity extends BaseActivity {
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (et_re_username.getText().toString().isEmpty()){
+                String username = et_re_username.getText().toString();
+                String password = et_re_password.getText().toString();
+                if (username.isEmpty()) {
                     showToast("手机号码不能为空");
                     return;
                 }
-                if (et_re_password.getText().toString().isEmpty()){
+                if (password.isEmpty()) {
                     showToast("密码不能为空");
                     return;
                 }
-                if (!et_re_password.getText().toString().equals(et_replay_password.getText().toString())){
+                if (!password.equals(et_replay_password.getText().toString())) {
                     showToast("两次密码不匹配");
                     return;
                 }
+                final User us = new User();
+                us.setUsername(username);
+                us.setPassword(password);
                 final ProgressDialog progressView = new ProgressDialog(LoginActivity.this);
                 progressView.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressView.setMessage("正在登录...");
+                progressView.setMessage("正在注册...");
                 progressView.setCancelable(false);
                 progressView.show();
+                try {
+                    LlcService.getApi().register(new JSONObject(new Gson().toJson(us)))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<ResponseBody>() {
+                                @Override
+                                public void onCompleted() {
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    progressView.dismiss();
+                                    showToast("注册失败:" + e.getMessage());
+                                    e.printStackTrace();
+                                }
+
+                                @Override
+                                public void onNext(ResponseBody responseBody) {
+                                    progressView.dismiss();
+                                    try {
+                                        String response = responseBody.string();
+                                        Log.i("TAG", new Gson().toJson(us)+"\n"+response);
+                                        Const.sUser = us;
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -129,34 +169,41 @@ public class LoginActivity extends BaseActivity {
             progressView.setMessage("正在登录...");
             progressView.setCancelable(false);
             progressView.show();
-            LlcService.getApi().login(new Gson().toJson(user))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<ResponseBody>() {
-                        @Override
-                        public void onCompleted() {
+            try {
+                LlcService.getApi().login(new JSONObject(new Gson().toJson(user)))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Observer<ResponseBody>() {
+                            @Override
+                            public void onCompleted() {
 
-                        }
+                            }
 
-                        @Override
-                        public void onError(Throwable e) {
-                            progressView.dismiss();
-                            showToast("登录失败:" + e.getMessage());
-                            e.printStackTrace();
-                        }
-
-                        @Override
-                        public void onNext(ResponseBody responseBody) {
-                            progressView.dismiss();
-                            try {
-                                String response = responseBody.string();
-                                Log.i("TAG", response);
-                                Const.sUser = user;
-                            } catch (IOException e) {
+                            @Override
+                            public void onError(Throwable e) {
+                                progressView.dismiss();
+                                if (e.getMessage().contains("401"))
+                                    showToast("用户名或密码错误");
+                                else
+                                    showToast("登录失败:" + e.getMessage());
                                 e.printStackTrace();
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onNext(ResponseBody responseBody) {
+                                progressView.dismiss();
+                                try {
+                                    String response = responseBody.string();
+                                    Log.i("TAG", response);
+                                    Const.sUser = user;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -3,9 +3,11 @@ package com.llcwh.babycare.ui;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,10 +58,11 @@ public class MainActivity extends AppCompatActivity {
 
         mToolbar.setTitle(R.string.app_name);
         setSupportActionBar(mToolbar);
+        MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
-    private void refreshLocation() {
+    public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
     }
 
@@ -74,14 +77,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    private void receiveLocation(AMapLocation aMapLocation) {
-        aMapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
-        aMapLocation.getLatitude();//获取纬度
-        aMapLocation.getLongitude();//获取经度
-        aMapLocation.getAccuracy();//获取精度信息
+    public void receiveLocation(AMapLocation aMapLocation) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Date date = new Date(aMapLocation.getTime());
-        tv_my_location.setText("您在" + aMapLocation.getAddress() + "(" + df.format(date) + ")");
+        String address = aMapLocation.getAddress();
+        if (TextUtils.isEmpty(address)) {
+            address = "[" + aMapLocation.getLatitude() + "," + aMapLocation.getLongitude() + "]";
+        }
+        tv_my_location.setText("您在" + address + "(" + df.format(date) + ")");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
     @OnShowRationale({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
@@ -103,4 +112,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "位置和读写权限已被永久拒绝，将无法使用，请到设置里打开权限", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
 }

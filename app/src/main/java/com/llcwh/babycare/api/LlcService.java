@@ -29,17 +29,17 @@ public class LlcService {
     private static Api api = null;
 
     public static Api getApi() {
-        synchronized (monitor) {
-            if (api == null) {
+        if (api == null) {
+            synchronized (monitor) {
                 api = new Retrofit.Builder()
-                        .baseUrl("http://10.10.11.158:5000")
+                        .baseUrl("http://192.168.2.232:5000")
                         .client(client)
                         .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
                         .build().create(Api.class);
             }
-            return api;
         }
+        return api;
     }
 
     private static class TokenInterceptor implements Interceptor {

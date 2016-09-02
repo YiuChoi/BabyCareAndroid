@@ -77,6 +77,11 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        LoginActivityPermissionsDispatcher.resumeLoginWithCheck(this);
+
+    }
+    @NeedsPermission(Manifest.permission.READ_PHONE_STATE)
+    public void resumeLogin(){
         String userString = SPUtil.getUser();
         if (TextUtils.isEmpty(userString))
             return;

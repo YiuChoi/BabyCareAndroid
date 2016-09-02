@@ -9,6 +9,7 @@ import com.llcwh.babycare.R;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by 蔡小木 on 2016/9/2 0002.
@@ -24,7 +25,9 @@ public class MapActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_map);
+
+        ButterKnife.bind(this);
 
         mMapView.onCreate(savedInstanceState);
         if (aMap == null) {

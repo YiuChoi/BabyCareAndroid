@@ -1,5 +1,9 @@
 package com.llcwh.babycare.api;
 
+import android.text.TextUtils;
+
+import com.llcwh.babycare.util.SPUtil;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -28,7 +32,7 @@ public class LlcService {
         synchronized (monitor) {
             if (api == null) {
                 api = new Retrofit.Builder()
-                        .baseUrl("http://192.168.2.232:5000")
+                        .baseUrl("http://10.10.11.158:5000")
                         .client(client)
                         .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
@@ -44,9 +48,10 @@ public class LlcService {
         public Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
             Request modifiedRequest = request;
-            if (TokenManager.hasToken()) {
+            String token = SPUtil.getToken();
+            if (!TextUtils.isEmpty(token)) {
                 modifiedRequest = request.newBuilder()
-                        .addHeader("Authorization", "JWT " + TokenManager.getToken())
+                        .addHeader("Authorization", "JWT " + token)
                         .build();
             }
             return chain.proceed(modifiedRequest);

@@ -16,6 +16,7 @@
 #   public *;
 #}
 -dontwarn java.lang.invoke.*
+-dontwarn com.amap.api.maps.**
 -keep  class com.amap.api.mapcore.**{*;}
 -keep  class com.amap.api.maps.**{*;}
 -keep  class com.autonavi.amap.mapcore.*{*;}
@@ -24,3 +25,27 @@
 -keep class com.autonavi.aps.amapapi.model.**{*;}
 -keep class com.amap.api.navi.**{*;}
 -keep class com.autonavi.**{*;}
+
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *;}
+-dontwarn okio.*
+
+# rxjava
+-dontwarn sun.misc.**
+
+-keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
+   long producerIndex;
+   long consumerIndex;
+}
+
+-keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
+    rx.internal.util.atomic.LinkedQueueNode producerNode;
+}
+
+-keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueConsumerNodeRef {
+    rx.internal.util.atomic.LinkedQueueNode consumerNode;
+}

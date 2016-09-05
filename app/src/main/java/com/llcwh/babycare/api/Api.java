@@ -1,6 +1,8 @@
 package com.llcwh.babycare.api;
 
 import com.llcwh.babycare.model.Baby;
+import com.llcwh.babycare.model.BindInfo;
+import com.llcwh.babycare.model.LocationResponse;
 import com.llcwh.babycare.model.LoginResponse;
 import com.llcwh.babycare.model.CommonResponse;
 import com.llcwh.babycare.model.UploadLocation;
@@ -21,7 +23,7 @@ public interface Api {
     @Headers("Content-Type: application/json")
     Observable<LoginResponse> login(@Body User user);
 
-    @POST("/api/v1/get_info")
+    @POST("/api/v1/login")
     @Headers("Content-Type: application/json")
     Observable<ResponseBody> getInfo();
 
@@ -33,7 +35,16 @@ public interface Api {
     @Headers("Content-Type: application/json")
     Observable<CommonResponse> uploadLocation(@Body UploadLocation location);
 
+    @POST("/api/v1/get_location")
+    @Headers("Content-Type: application/json")
+    Observable<LocationResponse> getLocation(@Body Baby baby);
+
     @POST("/api/v1/bind")
     @Headers("Content-Type: application/json")
     Observable<CommonResponse> bind(@Body Baby baby);
+
+    @POST("/api/v1/get_bind_info")
+    @Headers("Content-Type: application/json")
+    Observable<BindInfo> getBindInfo();
+
 }

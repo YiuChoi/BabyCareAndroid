@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.llcwh.babycare.R;
 import com.llcwh.babycare.api.LlcService;
 import com.llcwh.babycare.model.Baby;
 import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.LocationResponse;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -53,6 +55,10 @@ public class MainActivity extends BaseActivity {
     TextView tv_has_bind;
     @BindView(R.id.tv_bind)
     TextView tv_bind;
+    @BindView(R.id.btn_refresh)
+    Button btn_refresh;
+
+    LocationResponse mLocationResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,19 +79,46 @@ public class MainActivity extends BaseActivity {
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    @OnClick(R.id.btn_refresh)
     public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
+        LlcService.getApi().getLocation(new Baby("1", ""))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<LocationResponse>() {
+                    @Override
+                    public void onCompleted() {
 
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(LocationResponse locationResponse) {
+                        if (locationResponse.isStatus()) {
+                            tv_baby_location.setText("您的baby1在" + locationResponse.getAddress() + "(" + locationResponse.getLast_time() + ")");
+                            mLocationResponse = locationResponse;
+                        }
+                        showToast(locationResponse.getMsg());
+                    }
+                });
     }
 
     @OnClick(R.id.tv_go_map)
     public void goMap() {
-        startActivity(new Intent(this, MapActivity.class));
+        if (mLocationResponse == null) {
+            showToast("暂时没有位置信息，请刷新试试");
+            return;
+        }
+        startActivity(new Intent(this, MapActivity.class).putExtra("data", mLocationResponse));
     }
 
     @OnClick(R.id.tv_bind)
     public void bind() {
-        LlcService.getApi().bind(new Baby("1"))
+        LlcService.getApi().bind(new Baby("1", "baba"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<CommonResponse>() {

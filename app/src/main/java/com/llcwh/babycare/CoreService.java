@@ -44,7 +44,7 @@ public class CoreService extends Service implements AMapLocationListener {
         //设置定位模式为高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
         mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
         //设置定位间隔,单位毫秒,默认为2000ms
-        mLocationOption.setInterval(2000);
+        mLocationOption.setInterval(10000);
         mLocationOption.setMockEnable(false);
         mLocationOption.setNeedAddress(true);
         //设置定位参数
@@ -65,7 +65,7 @@ public class CoreService extends Service implements AMapLocationListener {
                 //定位成功回调信息，设置相关消息
                 boolean isBind = true;
                 if (isBind) {
-                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), "1"))
+                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), "2"))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Observer<CommonResponse>() {

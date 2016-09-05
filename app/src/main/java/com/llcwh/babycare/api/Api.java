@@ -1,7 +1,9 @@
 package com.llcwh.babycare.api;
 
+import com.llcwh.babycare.model.Baby;
 import com.llcwh.babycare.model.LoginResponse;
-import com.llcwh.babycare.model.RegisterResponse;
+import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.UploadLocation;
 import com.llcwh.babycare.model.User;
 
 import okhttp3.ResponseBody;
@@ -25,5 +27,13 @@ public interface Api {
 
     @POST("/api/v1/register")
     @Headers("Content-Type: application/json")
-    Observable<RegisterResponse> register(@Body User  user);
+    Observable<CommonResponse> register(@Body User user);
+
+    @POST("/api/v1/upload_location")
+    @Headers("Content-Type: application/json")
+    Observable<CommonResponse> uploadLocation(@Body UploadLocation location);
+
+    @POST("/api/v1/bind")
+    @Headers("Content-Type: application/json")
+    Observable<CommonResponse> bind(@Body Baby baby);
 }

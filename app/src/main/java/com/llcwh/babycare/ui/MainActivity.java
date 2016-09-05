@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.widget.TextView;
@@ -14,6 +13,10 @@ import android.widget.Toast;
 import com.amap.api.location.AMapLocation;
 import com.llcwh.babycare.CoreService;
 import com.llcwh.babycare.R;
+import com.llcwh.babycare.api.LlcService;
+import com.llcwh.babycare.model.Baby;
+import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.ui.base.BaseActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -31,9 +34,12 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -54,16 +60,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-        EventBus.getDefault().register(this);
 
         mToolbar.setTitle(R.string.app_name);
         setSupportActionBar(mToolbar);
         MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
     @NeedsPermission({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
+
     }
 
     @OnClick(R.id.tv_go_map)
@@ -73,7 +85,27 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.tv_bind)
     public void bind() {
+        LlcService.getApi().bind(new Baby("1"))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<CommonResponse>() {
+                    @Override
+                    public void onCompleted() {
 
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(CommonResponse commonResponse) {
+                        if (commonResponse.isStatus()) {
+                        }
+                        showToast(commonResponse.getMsg());
+                    }
+                });
     }
 
     @Subscribe
@@ -113,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         EventBus.getDefault().unregister(this);
     }
 }

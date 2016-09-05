@@ -32,7 +32,7 @@ public class LlcService {
         if (api == null) {
             synchronized (monitor) {
                 api = new Retrofit.Builder()
-                        .baseUrl("http://192.168.2.232:5000")
+                        .baseUrl("http://10.10.11.158:5000")
                         .client(client)
                         .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())

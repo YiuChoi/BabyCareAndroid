@@ -4,13 +4,21 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
+import com.llcwh.babycare.api.LlcService;
+import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.UploadLocation;
 
 import org.greenrobot.eventbus.EventBus;
+
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class CoreService extends Service implements AMapLocationListener {
 
@@ -55,6 +63,30 @@ public class CoreService extends Service implements AMapLocationListener {
         if (amapLocation != null) {
             if (amapLocation.getErrorCode() == 0) {
                 //定位成功回调信息，设置相关消息
+                boolean isBind = true;
+                if (isBind) {
+                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), "1"))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<CommonResponse>() {
+                                @Override
+                                public void onCompleted() {
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    e.printStackTrace();
+                                }
+
+                                @Override
+                                public void onNext(CommonResponse commonResponse) {
+                                    if (!commonResponse.isStatus()) {
+                                        Toast.makeText(CoreService.this, commonResponse.getMsg(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                }
                 EventBus.getDefault().post(amapLocation);
             } else {
                 //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。

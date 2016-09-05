@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by 蔡小木 on 2016/9/2 0002.
  */
-public class RegisterResponse {
+public class CommonResponse {
     @SerializedName("status")
     boolean status;
     @SerializedName("msg")

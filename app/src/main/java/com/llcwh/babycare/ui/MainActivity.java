@@ -16,7 +16,8 @@ import com.llcwh.babycare.CoreService;
 import com.llcwh.babycare.R;
 import com.llcwh.babycare.api.LlcService;
 import com.llcwh.babycare.model.Baby;
-import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.BindInfo;
+import com.llcwh.babycare.model.BindInfoData;
 import com.llcwh.babycare.model.LocationResponse;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
@@ -24,6 +25,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -55,10 +57,13 @@ public class MainActivity extends BaseActivity {
     TextView tv_has_bind;
     @BindView(R.id.tv_bind)
     TextView tv_bind;
-    @BindView(R.id.btn_refresh)
+    @BindView(R.id.btn_refresh_location)
     Button btn_refresh;
+    @BindView(R.id.btn_refresh_bind)
+    Button btn_refresh_bind;
 
     LocationResponse mLocationResponse;
+    AMapLocation mAMapLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +75,7 @@ public class MainActivity extends BaseActivity {
         mToolbar.setTitle(R.string.app_name);
         setSupportActionBar(mToolbar);
         MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
+        refreshBind();
     }
 
     @Override
@@ -79,7 +85,7 @@ public class MainActivity extends BaseActivity {
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
-    @OnClick(R.id.btn_refresh)
+    @OnClick(R.id.btn_refresh_location)
     public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
         LlcService.getApi().getLocation(new Baby("1", ""))
@@ -109,19 +115,19 @@ public class MainActivity extends BaseActivity {
 
     @OnClick(R.id.tv_go_map)
     public void goMap() {
-        if (mLocationResponse == null) {
+        if (mLocationResponse == null || mAMapLocation == null) {
             showToast("暂时没有位置信息，请刷新试试");
             return;
         }
-        startActivity(new Intent(this, MapActivity.class).putExtra("data", mLocationResponse));
+        startActivity(new Intent(this, MapActivity.class).putExtra("end", mLocationResponse).putExtra("start", mAMapLocation));
     }
 
-    @OnClick(R.id.tv_bind)
-    public void bind() {
-        LlcService.getApi().bind(new Baby("1", "baba"))
+    @OnClick(R.id.btn_refresh_bind)
+    public void refreshBind() {
+        LlcService.getApi().getBindInfo()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<CommonResponse>() {
+                .subscribe(new Observer<BindInfo>() {
                     @Override
                     public void onCompleted() {
 
@@ -133,16 +139,28 @@ public class MainActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(CommonResponse commonResponse) {
-                        if (commonResponse.isStatus()) {
+                    public void onNext(BindInfo bindInfo) {
+                        if (bindInfo.isStatus()) {
+                            ArrayList<BindInfoData> bindInfoDatas = bindInfo.getData();
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (BindInfoData bindInfoData : bindInfoDatas) {
+                                stringBuilder.append("已绑定" + bindInfoData.getBaby_uuid() + "(" + bindInfoData.getRelationship() + ")\n");
+                            }
+                            tv_has_bind.setText(stringBuilder);
                         }
-                        showToast(commonResponse.getMsg());
+                        showToast(bindInfo.getMsg());
                     }
                 });
     }
 
+    @OnClick(R.id.tv_bind)
+    public void bind() {
+        startActivity(new Intent(this,BindActivity.class));
+    }
+
     @Subscribe
     public void receiveLocation(AMapLocation aMapLocation) {
+        mAMapLocation = aMapLocation;
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Date date = new Date(aMapLocation.getTime());
         String address = aMapLocation.getAddress();

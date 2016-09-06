@@ -1,13 +1,17 @@
 package com.llcwh.babycare.ui;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +22,7 @@ import com.llcwh.babycare.api.LlcService;
 import com.llcwh.babycare.model.Baby;
 import com.llcwh.babycare.model.BindInfo;
 import com.llcwh.babycare.model.BindInfoData;
+import com.llcwh.babycare.model.CommonResponse;
 import com.llcwh.babycare.model.LocationResponse;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
@@ -41,6 +46,9 @@ import permissions.dispatcher.RuntimePermissions;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+
+import static com.llcwh.babycare.Const.bindId;
+import static com.llcwh.babycare.Const.isTest;
 
 @RuntimePermissions
 public class MainActivity extends BaseActivity {
@@ -88,7 +96,7 @@ public class MainActivity extends BaseActivity {
     @OnClick(R.id.btn_refresh_location)
     public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
-        LlcService.getApi().getLocation(new Baby("1", ""))
+        LlcService.getApi().getLocation(new Baby(bindId, ""))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<LocationResponse>() {
@@ -105,7 +113,11 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onNext(LocationResponse locationResponse) {
                         if (locationResponse.isStatus()) {
-                            tv_baby_location.setText("您的baby1在" + locationResponse.getAddress() + "(" + locationResponse.getLast_time() + ")");
+                            String address =  locationResponse.getAddress();
+                            if (TextUtils.isEmpty(address)) {
+                                address = "["+locationResponse.getLat()+","+locationResponse.getLng()+"]";
+                            }
+                            tv_baby_location.setText("您的baby" + bindId + "在" + address + "(" + locationResponse.getLast_time() + ")");
                             mLocationResponse = locationResponse;
                         }
                         showToast(locationResponse.getMsg());
@@ -145,6 +157,7 @@ public class MainActivity extends BaseActivity {
                             StringBuilder stringBuilder = new StringBuilder();
                             for (BindInfoData bindInfoData : bindInfoDatas) {
                                 stringBuilder.append("已绑定" + bindInfoData.getBaby_uuid() + "(" + bindInfoData.getRelationship() + ")\n");
+                                bindId = bindInfoData.getBaby_uuid();
                             }
                             tv_has_bind.setText(stringBuilder);
                         }
@@ -155,7 +168,46 @@ public class MainActivity extends BaseActivity {
 
     @OnClick(R.id.tv_bind)
     public void bind() {
-        startActivity(new Intent(this,BindActivity.class));
+        if (isTest) {
+            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+            alertDialog.setTitle("绑定");
+            View view = LayoutInflater.from(this).inflate(R.layout.dialog_bind, null, false);
+            alertDialog.setView(view);
+            EditText et_uuid = (EditText) view.findViewById(R.id.et_uuid);
+            EditText et_relation = (EditText) view.findViewById(R.id.et_relation);
+            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确认", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String uuid = et_uuid.getText().toString();
+                    String relation = et_relation.getText().toString();
+                    LlcService.getApi().bind(new Baby(uuid, relation))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<CommonResponse>() {
+                                @Override
+                                public void onCompleted() {
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+
+                                }
+
+                                @Override
+                                public void onNext(CommonResponse commonResponse) {
+                                    if (commonResponse.isStatus()) {
+                                        refreshBind();
+                                    }
+                                    showToast(commonResponse.getMsg());
+                                }
+                            });
+                }
+            });
+            alertDialog.show();
+            return;
+        }
+        startActivity(new Intent(this, BindActivity.class));
     }
 
     @Subscribe

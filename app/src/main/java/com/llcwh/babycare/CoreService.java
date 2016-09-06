@@ -3,6 +3,7 @@ package com.llcwh.babycare;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ import org.greenrobot.eventbus.EventBus;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+
+import static com.llcwh.babycare.Const.bindId;
 
 public class CoreService extends Service implements AMapLocationListener {
 
@@ -63,9 +66,8 @@ public class CoreService extends Service implements AMapLocationListener {
         if (amapLocation != null) {
             if (amapLocation.getErrorCode() == 0) {
                 //定位成功回调信息，设置相关消息
-                boolean isBind = true;
-                if (isBind) {
-                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), "2"))
+                if (!TextUtils.isEmpty(bindId)) {
+                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), bindId))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Observer<CommonResponse>() {

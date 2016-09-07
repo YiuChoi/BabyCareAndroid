@@ -1,7 +1,9 @@
 package com.llcwh.babycare.api;
 
+import android.content.Intent;
 import android.text.TextUtils;
 
+import com.llcwh.babycare.BabyApplication;
 import com.llcwh.babycare.util.SPUtil;
 
 import java.io.IOException;
@@ -54,7 +56,13 @@ public class LlcService {
                         .addHeader("Authorization", "JWT " + token)
                         .build();
             }
-            return chain.proceed(modifiedRequest);
+            Response originalResponse = chain.proceed(modifiedRequest);
+            if (originalResponse.code() == 401 && !TextUtils.isEmpty(token)) {
+                final Intent intent = BabyApplication.getContext().getPackageManager().getLaunchIntentForPackage(BabyApplication.getContext().getPackageName());
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                BabyApplication.getContext().startActivity(intent);
+            }
+            return originalResponse;
         }
     }
 }

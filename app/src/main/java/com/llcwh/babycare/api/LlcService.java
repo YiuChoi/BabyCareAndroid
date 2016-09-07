@@ -1,9 +1,7 @@
 package com.llcwh.babycare.api;
 
-import android.content.Intent;
 import android.text.TextUtils;
 
-import com.llcwh.babycare.BabyApplication;
 import com.llcwh.babycare.util.SPUtil;
 
 import java.io.IOException;
@@ -15,6 +13,8 @@ import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.llcwh.babycare.util.CommonUtil.logout;
 
 /**
  * Created by 蔡小木 on 2016/8/31 0031.
@@ -58,9 +58,7 @@ public class LlcService {
             }
             Response originalResponse = chain.proceed(modifiedRequest);
             if (originalResponse.code() == 401 && !TextUtils.isEmpty(token)) {
-                final Intent intent = BabyApplication.getContext().getPackageManager().getLaunchIntentForPackage(BabyApplication.getContext().getPackageName());
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                BabyApplication.getContext().startActivity(intent);
+                logout();
             }
             return originalResponse;
         }

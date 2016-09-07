@@ -20,7 +20,7 @@ import butterknife.ButterKnife;
 /**
  * Created by 蔡小木 on 2016/9/2 0002.
  */
-public class MapActivity extends BaseActivity{
+public class MapActivity extends BaseActivity {
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
     @BindView(R.id.mv)
@@ -41,14 +41,15 @@ public class MapActivity extends BaseActivity{
         if (aMap == null) {
             aMap = mMapView.getMap();
         }
-        mToolbar.setTitle(R.string.app_name);
+        mToolbar.setTitle("最新位置");
+        setSupportActionBar(mToolbar);
         mLocationResponse = getIntent().getParcelableExtra("end");
         //mAMapLocation = getIntent().getParcelableExtra("start");
         LatLng latLng = new LatLng(Double.valueOf(mLocationResponse.getLat()), Double.valueOf(mLocationResponse.getLng()));
         aMap.addMarker(new MarkerOptions().visible(true).title(mLocationResponse.getAddress() + "(" + mLocationResponse.getLast_time() + ")").position(latLng));
         aMap.moveCamera(CameraUpdateFactory.changeLatLng(latLng));
         aMap.moveCamera(CameraUpdateFactory.zoomTo(aMap.getMaxZoomLevel()));
-        UiSettings  mUiSettings = aMap.getUiSettings();//实例化UiSettings类
+        UiSettings mUiSettings = aMap.getUiSettings();//实例化UiSettings类
 //        final RouteSearch.FromAndTo fromAndTo = new RouteSearch.FromAndTo(
 //               new LatLonPoint(mAMapLocation.getLatitude(),mAMapLocation.getLongitude()), new LatLonPoint(Double.valueOf(mLocationResponse.getLat()), Double.valueOf(mLocationResponse.getLng())));
 //        RouteSearch mRouteSearch = new RouteSearch(this);

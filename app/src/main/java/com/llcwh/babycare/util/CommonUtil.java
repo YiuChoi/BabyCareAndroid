@@ -1,7 +1,10 @@
 package com.llcwh.babycare.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.telephony.TelephonyManager;
+
+import com.llcwh.babycare.BabyApplication;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -41,5 +44,12 @@ public class CommonUtil {
             hex.append(Integer.toHexString(b & 0xFF));
         }
         return hex.toString();
+    }
+
+    public static void logout(){
+        SPUtil.saveToken(null);
+        final Intent intent = BabyApplication.getContext().getPackageManager().getLaunchIntentForPackage(BabyApplication.getContext().getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        BabyApplication.getContext().startActivity(intent);
     }
 }

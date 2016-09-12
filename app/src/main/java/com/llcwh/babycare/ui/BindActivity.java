@@ -44,6 +44,9 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
 
         ButterKnife.bind(this);
 
+        mToolbar.setTitle("连接设备");
+        setSupportActionBar(mToolbar);
+
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mBluetoothAdapter = new BluetoothAdapter(bluetoothDevices);
         mBluetoothAdapter.setOnItemClickListener(this);
@@ -52,6 +55,7 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
 
         mBleManager = BleManager.getInstance();
         mBleManager.init(this);
+        scan();
     }
 
     private void scan() {

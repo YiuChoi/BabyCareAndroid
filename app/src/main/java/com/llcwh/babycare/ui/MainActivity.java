@@ -82,8 +82,8 @@ public class MainActivity extends BaseActivity {
 
         mToolbar.setTitle(R.string.app_name);
         setSupportActionBar(mToolbar);
-        MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
         refreshBind();
+        MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onError(Throwable e) {
-
+                        e.printStackTrace();
                     }
 
                     @Override

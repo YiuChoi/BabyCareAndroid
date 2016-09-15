@@ -4,10 +4,12 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -19,8 +21,8 @@ import android.widget.Toast;
 import com.jaeger.library.StatusBarUtil;
 import com.llcwh.babycare.R;
 import com.llcwh.babycare.api.LlcService;
-import com.llcwh.babycare.model.LoginResponse;
 import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.LoginResponse;
 import com.llcwh.babycare.model.User;
 import com.llcwh.babycare.ui.base.BaseActivity;
 import com.llcwh.babycare.util.SPUtil;
@@ -80,8 +82,9 @@ public class LoginActivity extends BaseActivity {
         LoginActivityPermissionsDispatcher.resumeLoginWithCheck(this);
 
     }
+
     @NeedsPermission(Manifest.permission.READ_PHONE_STATE)
-    public void resumeLogin(){
+    public void resumeLogin() {
         String userString = SPUtil.getUser();
         if (TextUtils.isEmpty(userString))
             return;
@@ -117,7 +120,7 @@ public class LoginActivity extends BaseActivity {
                 showToast("两次密码不匹配");
                 return;
             }
-            final User user = new User(username,password);
+            final User user = new User(username, password);
             final ProgressDialog progressView = new ProgressDialog(LoginActivity.this);
             progressView.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressView.setMessage("正在注册...");
@@ -198,7 +201,7 @@ public class LoginActivity extends BaseActivity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            final User user = new User(username,password);
+            final User user = new User(username, password);
             final ProgressDialog progressView = new ProgressDialog(this);
             progressView.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressView.setMessage("正在登录...");

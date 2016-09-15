@@ -15,6 +15,8 @@
 
         <TextView
             android:id="@+id/tv_bluetooth_name"
+            android:layout_margin="5dp"
+            android:text="LLC"
             style="@style/Base.TextAppearance.AppCompat.Body2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -22,7 +24,9 @@
         <TextView
             android:id="@+id/tv_bluetooth_address"
             style="@style/Base.TextAppearance.AppCompat.Small"
+            android:text="sdasd"
             android:layout_width="match_parent"
+            android:layout_margin="5dp"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 

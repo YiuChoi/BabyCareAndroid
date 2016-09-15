@@ -1,7 +1,14 @@
 package com.llcwh.babycare.ui;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +19,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.clj.fastble.BleManager;
+import com.clj.fastble.bluetooth.BleGattCallback;
+import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.llcwh.babycare.R;
 import com.llcwh.babycare.ui.adapter.BluetoothAdapter;
@@ -41,10 +50,24 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
 
     final int TIME_OUT = 5000;
 
+    final int SHOW_TOAST = 12;
+
     ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
     BleManager mBleManager;
     BluetoothAdapter mBluetoothAdapter;
     Animation mAnimation;
+
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case SHOW_TOAST:
+                    showToast(msg.getData().getString("msg"));
+                    break;
+            }
+            return true;
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +107,7 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
                 mAnimation.cancel();
                 Logger.i("共发现" + devices.length + "台设备");
                 for (int i = 0; i < devices.length; i++) {
-                    Logger.i("name:" + devices[i].getName() + "------mac:" + devices[i].getAddress());
+                    Logger.i("name:" + devices[i].getName() + "------mac:" + devices[i].getAddress() + "----" + devices[i].getUuids());
                 }
                 ArrayList<BluetoothDevice> tmpBluetoothDevices = new ArrayList<>(Arrays.asList(devices));
                 bluetoothDevices.clear();
@@ -110,7 +133,46 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
 
     @Override
     public void onItemClick(View view, BluetoothDevice data) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            data.setPin("123456".getBytes());
+        }
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("正在连接...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        mBleManager.connectDevice(data, new BleGattCallback() {
+            @Override
+            public void onConnectSuccess(BluetoothGatt gatt, int status) {
+                progressDialog.dismiss();
+                gatt.connect();
+                Message message = handler.obtainMessage();
+                message.what = SHOW_TOAST;
+                Bundle bundle = new Bundle();
+                bundle.putString("msg", "连接成功");
+                message.setData(bundle);
+                handler.sendMessage(message);
+                BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                bluetoothManager.getConnectedDevices(BIND_ABOVE_CLIENT);
+                Logger.i(gatt.readRemoteRssi() + ":" + bluetoothManager.getConnectedDevices(BIND_ABOVE_CLIENT).get(0).getAddress());
+            }
 
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                Logger.i("onServicesDiscovered");
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                progressDialog.dismiss();
+                Message message = handler.obtainMessage();
+                message.what = SHOW_TOAST;
+                Bundle bundle = new Bundle();
+                bundle.putString("msg", "连接失败：" + exception.getDescription());
+                message.setData(bundle);
+                handler.sendMessage(message);
+            }
+        });
     }
 
 

@@ -3,6 +3,7 @@ package com.llcwh.babycare.ui;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -113,9 +114,9 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onNext(LocationResponse locationResponse) {
                         if (locationResponse.isStatus()) {
-                            String address =  locationResponse.getAddress();
+                            String address = locationResponse.getAddress();
                             if (TextUtils.isEmpty(address)) {
-                                address = "["+locationResponse.getLat()+","+locationResponse.getLng()+"]";
+                                address = "[" + locationResponse.getLat() + "," + locationResponse.getLng() + "]";
                             }
                             tv_baby_location.setText("您的baby" + bindId + "在" + address + "(" + locationResponse.getLast_time() + ")");
                             mLocationResponse = locationResponse;
@@ -205,6 +206,11 @@ public class MainActivity extends BaseActivity {
                 }
             });
             alertDialog.show();
+            return;
+        }
+        // 检查当前手机是否支持ble 蓝牙,如果不支持退出程序
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            showToast("当前手机不支持BLE,无法绑定");
             return;
         }
         startActivity(new Intent(this, BindActivity.class));

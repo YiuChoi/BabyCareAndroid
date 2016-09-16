@@ -144,7 +144,6 @@ public class BindActivity extends BaseActivity implements BluetoothAdapter.OnRec
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 progressDialog.dismiss();
-                gatt.connect();
                 Message message = handler.obtainMessage();
                 message.what = SHOW_TOAST;
                 Bundle bundle = new Bundle();

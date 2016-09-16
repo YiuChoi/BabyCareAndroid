@@ -11,11 +11,11 @@
         android:layout_marginStart="20dp">
 
         <EditText
-            android:id="@+id/et_uuid"
+            android:id="@+id/et_nickname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="要绑定的设备id"
-            android:inputType="phone"
+            android:hint="宝宝的名字"
+            android:inputType="text"
             android:maxLines="1" />
 
     </android.support.design.widget.TextInputLayout>

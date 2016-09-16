@@ -1,7 +1,6 @@
 package com.llcwh.babycare.ui;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -9,10 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,15 +16,16 @@ import com.amap.api.location.AMapLocation;
 import com.llcwh.babycare.CoreService;
 import com.llcwh.babycare.R;
 import com.llcwh.babycare.api.LlcService;
-import com.llcwh.babycare.model.Baby;
 import com.llcwh.babycare.model.BindInfo;
 import com.llcwh.babycare.model.BindInfoData;
-import com.llcwh.babycare.model.CommonResponse;
+import com.llcwh.babycare.model.BluetoothStatus;
+import com.llcwh.babycare.model.LocationData;
 import com.llcwh.babycare.model.LocationResponse;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,8 +45,8 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-import static com.llcwh.babycare.Const.bindId;
-import static com.llcwh.babycare.Const.isTest;
+import static com.llcwh.babycare.Const.bindIds;
+import static com.llcwh.babycare.Const.connectedId;
 
 @RuntimePermissions
 public class MainActivity extends BaseActivity {
@@ -71,7 +68,8 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.btn_refresh_bind)
     Button btn_refresh_bind;
 
-    LocationResponse mLocationResponse;
+    LocationData locationData;
+    BindInfo bindInfo;
     AMapLocation mAMapLocation;
 
     @Override
@@ -83,24 +81,24 @@ public class MainActivity extends BaseActivity {
 
         mToolbar.setTitle(R.string.app_name);
         setSupportActionBar(mToolbar);
-        refreshBind();
-        MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        refreshBind();
+        MainActivityPermissionsDispatcher.refreshLocationWithCheck(this);
     }
 
     @NeedsPermission({Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     @OnClick(R.id.btn_refresh_location)
     public void refreshLocation() {
         startService(new Intent(this, CoreService.class));
-        LlcService.getApi().getLocation(new Baby(bindId, ""))
+        LlcService.getApi().getLocation()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<LocationResponse>() {
+                .subscribe(new Observer<LocationData>() {
                     @Override
                     public void onCompleted() {
 
@@ -112,27 +110,32 @@ public class MainActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(LocationResponse locationResponse) {
-                        if (locationResponse.isStatus()) {
-                            String address = locationResponse.getAddress();
-                            if (TextUtils.isEmpty(address)) {
-                                address = "[" + locationResponse.getLat() + "," + locationResponse.getLng() + "]";
+                    public void onNext(LocationData locationData1) {
+                        if (locationData1.isStatus()) {
+                            ArrayList<LocationResponse> locationResponses = locationData1.getLocationResponses();
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (LocationResponse locationResponse : locationResponses) {
+                                String address = locationResponse.getAddress();
+                                if (TextUtils.isEmpty(address)) {
+                                    address = "[" + locationResponse.getLat() + "," + locationResponse.getLng() + "]";
+                                }
+                                stringBuilder.append("您的" + locationResponse.getNickname() + "在" + address + "(" + locationResponse.getLast_time() + ")\n");
                             }
-                            tv_baby_location.setText("您的baby" + bindId + "在" + address + "(" + locationResponse.getLast_time() + ")");
-                            mLocationResponse = locationResponse;
+                            tv_baby_location.setText(stringBuilder.toString());
+                            locationData = locationData1;
                         }
-                        showToast(locationResponse.getMsg());
+                        showToast(locationData1.getMsg());
                     }
                 });
     }
 
     @OnClick(R.id.tv_go_map)
     public void goMap() {
-        if (mLocationResponse == null || mAMapLocation == null) {
+        if (locationData == null || mAMapLocation == null) {
             showToast("暂时没有位置信息，请刷新试试");
             return;
         }
-        startActivity(new Intent(this, MapActivity.class).putExtra("end", mLocationResponse).putExtra("start", mAMapLocation));
+        startActivity(new Intent(this, MapActivity.class).putExtra("end", locationData).putExtra("start", mAMapLocation));
     }
 
     @OnClick(R.id.btn_refresh_bind)
@@ -152,62 +155,37 @@ public class MainActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(BindInfo bindInfo) {
-                        if (bindInfo.isStatus()) {
-                            ArrayList<BindInfoData> bindInfoDatas = bindInfo.getData();
-                            StringBuilder stringBuilder = new StringBuilder();
-                            for (BindInfoData bindInfoData : bindInfoDatas) {
-                                stringBuilder.append("已绑定" + bindInfoData.getBaby_uuid() + "(" + bindInfoData.getRelationship() + ")\n");
-                                bindId = bindInfoData.getBaby_uuid();
-                            }
-                            tv_has_bind.setText(stringBuilder);
+                    public void onNext(BindInfo bindInfo1) {
+                        if (bindInfo1.isStatus()) {
+                            bindInfo = bindInfo1;
+                            showBindData();
                         }
-                        showToast(bindInfo.getMsg());
+                        showToast(bindInfo1.getMsg());
                     }
                 });
     }
 
+    private void showBindData() {
+        if (bindInfo != null) {
+            ArrayList<BindInfoData> bindInfoDatas = bindInfo.getData();
+            StringBuilder stringBuilder = new StringBuilder();
+            bindIds = new ArrayList<>();
+            for (BindInfoData bindInfoData : bindInfoDatas) {
+                bindIds.add(bindInfoData.getBaby_uuid());
+                stringBuilder.append("已绑定" + bindInfoData.getNickname() + "(" + bindInfoData.getRelationship() + ")");
+                if (connectedId != null && connectedId.equals(bindInfoData.getBaby_uuid())) {
+                    stringBuilder.append("(已连接)");
+                } else {
+                    stringBuilder.append("(未连接)");
+                }
+                stringBuilder.append("\n");
+            }
+            tv_has_bind.setText(stringBuilder);
+        }
+    }
+
     @OnClick(R.id.tv_bind)
     public void bind() {
-        if (isTest) {
-            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-            alertDialog.setTitle("绑定");
-            View view = LayoutInflater.from(this).inflate(R.layout.dialog_bind, null, false);
-            alertDialog.setView(view);
-            EditText et_uuid = (EditText) view.findViewById(R.id.et_uuid);
-            EditText et_relation = (EditText) view.findViewById(R.id.et_relation);
-            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "确认", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    String uuid = et_uuid.getText().toString();
-                    String relation = et_relation.getText().toString();
-                    LlcService.getApi().bind(new Baby(uuid, relation))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<CommonResponse>() {
-                                @Override
-                                public void onCompleted() {
-
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-
-                                }
-
-                                @Override
-                                public void onNext(CommonResponse commonResponse) {
-                                    if (commonResponse.isStatus()) {
-                                        refreshBind();
-                                    }
-                                    showToast(commonResponse.getMsg());
-                                }
-                            });
-                }
-            });
-            alertDialog.show();
-            return;
-        }
         // 检查当前手机是否支持ble 蓝牙,如果不支持退出程序
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             showToast("当前手机不支持BLE,无法绑定");
@@ -226,6 +204,11 @@ public class MainActivity extends BaseActivity {
             address = "[" + aMapLocation.getLatitude() + "," + aMapLocation.getLongitude() + "]";
         }
         tv_my_location.setText("您在" + address + "(" + df.format(date) + ")");
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void receiveBlutooth(BluetoothStatus bluetoothStatus) {
+        showBindData();
     }
 
     @Override

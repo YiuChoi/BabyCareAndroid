@@ -12,6 +12,8 @@ public class BindInfoData {
     private String baby_uuid;
     @SerializedName("relationship")
     private String relationship;
+    @SerializedName("nickname")
+    private String nickname;
 
     public boolean is_admin() {
         return is_admin;
@@ -35,5 +37,13 @@ public class BindInfoData {
 
     public void setRelationship(String relationship) {
         this.relationship = relationship;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

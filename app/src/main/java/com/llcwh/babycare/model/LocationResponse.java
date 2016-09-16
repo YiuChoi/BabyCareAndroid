@@ -9,10 +9,8 @@ import com.google.gson.annotations.SerializedName;
  * Created by 蔡小木 on 2016/9/5 0005.
  */
 public class LocationResponse implements Parcelable {
-    @SerializedName("status")
-    private boolean status;
-    @SerializedName("msg")
-    private String msg;
+    @SerializedName("baby_uuid")
+    private String baby_uuid;
     @SerializedName("lat")
     private String lat;
     @SerializedName("lng")
@@ -21,22 +19,8 @@ public class LocationResponse implements Parcelable {
     private String address;
     @SerializedName("last_time")
     private String last_time;
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
+    @SerializedName("nickname")
+    private String nickname;
 
     public String getLat() {
         return lat;
@@ -70,6 +54,22 @@ public class LocationResponse implements Parcelable {
         this.last_time = last_time;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getBaby_uuid() {
+        return baby_uuid;
+    }
+
+    public void setBaby_uuid(String baby_uuid) {
+        this.baby_uuid = baby_uuid;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -77,24 +77,24 @@ public class LocationResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeByte(this.status ? (byte) 1 : (byte) 0);
-        dest.writeString(this.msg);
+        dest.writeString(this.baby_uuid);
         dest.writeString(this.lat);
         dest.writeString(this.lng);
         dest.writeString(this.address);
         dest.writeString(this.last_time);
+        dest.writeString(this.nickname);
     }
 
     public LocationResponse() {
     }
 
     protected LocationResponse(Parcel in) {
-        this.status = in.readByte() != 0;
-        this.msg = in.readString();
+        this.baby_uuid = in.readString();
         this.lat = in.readString();
         this.lng = in.readString();
         this.address = in.readString();
         this.last_time = in.readString();
+        this.nickname = in.readString();
     }
 
     public static final Parcelable.Creator<LocationResponse> CREATOR = new Parcelable.Creator<LocationResponse>() {

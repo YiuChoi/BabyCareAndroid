@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 /**
  * Created by 蔡小木 on 2016/9/6 0006.
  */
-public class BluetoothAdapter extends RecyclerView.Adapter<BluetoothAdapter.BluetoothViewHolder> implements View.OnClickListener {
+public class BluetoothListAdapter extends RecyclerView.Adapter<BluetoothListAdapter.BluetoothViewHolder> implements View.OnClickListener {
 
     private ArrayList<BluetoothDevice> mBluetoothDevices;
 
@@ -40,7 +40,7 @@ public class BluetoothAdapter extends RecyclerView.Adapter<BluetoothAdapter.Blue
         this.mOnItemClickListener = listener;
     }
 
-    public BluetoothAdapter(ArrayList<BluetoothDevice> bluetoothDevices) {
+    public BluetoothListAdapter(ArrayList<BluetoothDevice> bluetoothDevices) {
         this.mBluetoothDevices = bluetoothDevices;
     }
 

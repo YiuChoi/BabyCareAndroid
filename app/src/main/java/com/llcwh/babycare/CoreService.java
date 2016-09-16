@@ -1,28 +1,34 @@
 package com.llcwh.babycare;
 
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.IBinder;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
-import com.clj.fastble.BleManager;
 import com.llcwh.babycare.api.LlcService;
+import com.llcwh.babycare.model.BluetoothStatus;
 import com.llcwh.babycare.model.CommonResponse;
 import com.llcwh.babycare.model.UploadLocation;
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-import static com.llcwh.babycare.Const.bindId;
+import static com.llcwh.babycare.Const.bindIds;
+import static com.llcwh.babycare.Const.connectedId;
 
 public class CoreService extends Service implements AMapLocationListener {
 
@@ -31,6 +37,12 @@ public class CoreService extends Service implements AMapLocationListener {
     public AMapLocationClient mlocationClient = null;
 
     public CoreService() {
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -67,8 +79,8 @@ public class CoreService extends Service implements AMapLocationListener {
         if (amapLocation != null) {
             if (amapLocation.getErrorCode() == 0) {
                 //定位成功回调信息，设置相关消息
-                if (!TextUtils.isEmpty(bindId)) {
-                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), bindId))
+                if (!TextUtils.isEmpty(connectedId) && bindIds != null && bindIds.contains(connectedId)) {
+                    LlcService.getApi().uploadLocation(new UploadLocation(String.valueOf(amapLocation.getLatitude()), String.valueOf(amapLocation.getLongitude()), amapLocation.getAddress(), connectedId))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Observer<CommonResponse>() {
@@ -93,11 +105,28 @@ public class CoreService extends Service implements AMapLocationListener {
                 EventBus.getDefault().post(amapLocation);
             } else {
                 //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
-                Log.e("AmapError", "location Error, ErrCode:"
+                Logger.e("AmapError", "location Error, ErrCode:"
                         + amapLocation.getErrorCode() + ", errInfo:"
                         + amapLocation.getErrorInfo());
             }
         }
+    }
+
+    @Subscribe
+    public void connectBluetooth(BluetoothDevice bluetoothDevice) {
+        bluetoothDevice.connectGatt(this, true, new BluetoothGattCallback() {
+            @Override
+            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                super.onConnectionStateChange(gatt, status, newState);
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    EventBus.getDefault().post(new BluetoothStatus(true));
+                    connectedId = bluetoothDevice.getAddress();
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    EventBus.getDefault().post(new BluetoothStatus(false));
+                    connectedId = null;
+                }
+            }
+        });
     }
 
     @Override
@@ -105,5 +134,6 @@ public class CoreService extends Service implements AMapLocationListener {
         if (mlocationClient != null) {
             mlocationClient.onDestroy();
         }
+        EventBus.getDefault().unregister(this);
     }
 }

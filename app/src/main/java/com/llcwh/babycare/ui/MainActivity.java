@@ -7,8 +7,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
 import permissions.dispatcher.OnPermissionDenied;
@@ -55,6 +58,8 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     RecyclerView rv_baby;
     @BindView(R.id.swipe_container)
     SwipeRefreshLayout swipe_container;
+    @BindView(R.id.fab_add)
+    FloatingActionButton fab_add;
 
     BabyAdapter babyAdapter;
     BluetoothAdapter mBluetoothAdapter;
@@ -136,6 +141,14 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                 });
     }
 
+    @OnClick(R.id.fab_add)
+    public void add() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "当前手机不支持BLE,无法连接", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        startActivity(new Intent(this, BindActivity.class));
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void receiveBlutooth(BluetoothStatus bluetoothStatus) {

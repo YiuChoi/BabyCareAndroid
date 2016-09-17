@@ -11,6 +11,8 @@
     <string name="error_invalid_password">密码太短</string>
     <string name="error_incorrect_password">密码不正确</string>
     <string name="error_field_required">必填项</string>
+    <string name="connected">已连接(将上传你的位置)</string>
+    <string name="disconnected">未连接(不会上传你的位置)</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>

@@ -11,7 +11,7 @@ import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MarkerOptions;
 import com.llcwh.babycare.R;
-import com.llcwh.babycare.model.LocationResponse;
+import com.llcwh.babycare.model.BabyData;
 import com.llcwh.babycare.ui.base.BaseActivity;
 
 import butterknife.BindView;
@@ -28,7 +28,7 @@ public class MapActivity extends BaseActivity {
 
     AMap aMap;
     AMapLocation mAMapLocation;
-    LocationResponse mLocationResponse;
+    BabyData mLocationResponse;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,18 +43,12 @@ public class MapActivity extends BaseActivity {
         }
         mToolbar.setTitle("最新位置");
         setSupportActionBar(mToolbar);
-        mLocationResponse = getIntent().getParcelableExtra("end");
-        //mAMapLocation = getIntent().getParcelableExtra("start");
+        mLocationResponse = getIntent().getParcelableExtra("start");
         LatLng latLng = new LatLng(Double.valueOf(mLocationResponse.getLat()), Double.valueOf(mLocationResponse.getLng()));
         aMap.addMarker(new MarkerOptions().visible(true).title(mLocationResponse.getAddress() + "(" + mLocationResponse.getLast_time() + ")").position(latLng));
         aMap.moveCamera(CameraUpdateFactory.changeLatLng(latLng));
         aMap.moveCamera(CameraUpdateFactory.zoomTo(aMap.getMaxZoomLevel()));
         UiSettings mUiSettings = aMap.getUiSettings();//实例化UiSettings类
-//        final RouteSearch.FromAndTo fromAndTo = new RouteSearch.FromAndTo(
-//               new LatLonPoint(mAMapLocation.getLatitude(),mAMapLocation.getLongitude()), new LatLonPoint(Double.valueOf(mLocationResponse.getLat()), Double.valueOf(mLocationResponse.getLng())));
-//        RouteSearch mRouteSearch = new RouteSearch(this);
-//        RouteSearch.WalkRouteQuery query = new RouteSearch.WalkRouteQuery(fromAndTo, RouteSearch.WalkRouteQuery.CONTENTS_FILE_DESCRIPTOR);
-//        mRouteSearch.calculateWalkRouteAsyn(query);// 异步路径
         mUiSettings.setMyLocationButtonEnabled(true); // 显示默认的定位按钮
         aMap.setMyLocationEnabled(true);// 可触发定位并显示定位层
         mUiSettings.setScaleControlsEnabled(true);//显示比例尺控件

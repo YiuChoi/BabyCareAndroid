@@ -11,13 +11,13 @@ import java.util.ArrayList;
  * Created by caiya on 2016/9/16 0016.
  */
 
-public class LocationData implements Parcelable {
+public class InfoData implements Parcelable {
     @SerializedName("status")
     private boolean status;
     @SerializedName("msg")
     private String msg;
     @SerializedName("data")
-    ArrayList<LocationResponse> locationResponses;
+    ArrayList<BabyData> babyDatas;
 
     public boolean isStatus() {
         return status;
@@ -35,12 +35,12 @@ public class LocationData implements Parcelable {
         this.msg = msg;
     }
 
-    public ArrayList<LocationResponse> getLocationResponses() {
-        return locationResponses;
+    public ArrayList<BabyData> getBabyDatas() {
+        return babyDatas;
     }
 
-    public void setLocationResponses(ArrayList<LocationResponse> locationResponses) {
-        this.locationResponses = locationResponses;
+    public void setBabyDatas(ArrayList<BabyData> babyDatas) {
+        this.babyDatas = babyDatas;
     }
 
     @Override
@@ -52,27 +52,27 @@ public class LocationData implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeByte(this.status ? (byte) 1 : (byte) 0);
         dest.writeString(this.msg);
-        dest.writeTypedList(this.locationResponses);
+        dest.writeTypedList(this.babyDatas);
     }
 
-    public LocationData() {
+    public InfoData() {
     }
 
-    protected LocationData(Parcel in) {
+    protected InfoData(Parcel in) {
         this.status = in.readByte() != 0;
         this.msg = in.readString();
-        this.locationResponses = in.createTypedArrayList(LocationResponse.CREATOR);
+        this.babyDatas = in.createTypedArrayList(BabyData.CREATOR);
     }
 
-    public static final Parcelable.Creator<LocationData> CREATOR = new Parcelable.Creator<LocationData>() {
+    public static final Parcelable.Creator<InfoData> CREATOR = new Parcelable.Creator<InfoData>() {
         @Override
-        public LocationData createFromParcel(Parcel source) {
-            return new LocationData(source);
+        public InfoData createFromParcel(Parcel source) {
+            return new InfoData(source);
         }
 
         @Override
-        public LocationData[] newArray(int size) {
-            return new LocationData[size];
+        public InfoData[] newArray(int size) {
+            return new InfoData[size];
         }
     };
 }

@@ -8,5 +8,5 @@ import java.util.ArrayList;
 public class Const {
     public static final boolean isTest = false;
     public static String connectedId = null;
-    public static ArrayList<String> bindIds = null;
+    public static ArrayList<String> bindIds = new ArrayList<>();
 }

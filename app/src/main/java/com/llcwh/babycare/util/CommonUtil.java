@@ -49,7 +49,7 @@ public class CommonUtil {
     public static void logout(){
         SPUtil.saveToken(null);
         final Intent intent = BabyApplication.getContext().getPackageManager().getLaunchIntentForPackage(BabyApplication.getContext().getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         BabyApplication.getContext().startActivity(intent);
     }
 }

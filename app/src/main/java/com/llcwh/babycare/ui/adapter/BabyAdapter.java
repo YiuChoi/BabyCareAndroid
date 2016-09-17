@@ -84,6 +84,9 @@ public class BabyAdapter extends RecyclerView.Adapter<BabyAdapter.BabyViewHolder
                 }
             }
         });
+        holder.btn_add.setOnClickListener(v -> {
+
+        });
     }
 
     @Override

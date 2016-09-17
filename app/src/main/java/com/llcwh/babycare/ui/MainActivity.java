@@ -16,6 +16,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.llcwh.babycare.CoreService;
@@ -153,6 +155,22 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void receiveBlutooth(BluetoothStatus bluetoothStatus) {
         babyAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.setting:
+                startActivity(new Intent(this, SettingActivity.class));
+                break;
+        }
+        return true;
     }
 
     @Override

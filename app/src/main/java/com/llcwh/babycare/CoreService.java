@@ -102,7 +102,6 @@ public class CoreService extends Service implements AMapLocationListener {
                                 }
                             });
                 }
-                EventBus.getDefault().post(amapLocation);
             } else {
                 //显示错误信息ErrCode是错误码，errInfo是错误信息，详见错误码表。
                 Logger.e("AmapError", "location Error, ErrCode:"
@@ -114,7 +113,7 @@ public class CoreService extends Service implements AMapLocationListener {
 
     @Subscribe
     public void connectBluetooth(BluetoothDevice bluetoothDevice) {
-        bluetoothDevice.connectGatt(this, true, new BluetoothGattCallback() {
+        bluetoothDevice.connectGatt(this, false, new BluetoothGattCallback() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 super.onConnectionStateChange(gatt, status, newState);

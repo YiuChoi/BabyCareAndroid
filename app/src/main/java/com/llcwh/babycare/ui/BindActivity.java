@@ -67,7 +67,7 @@ public class BindActivity extends BaseActivity implements BluetoothListAdapter.O
     FloatingActionButton fab_refresh;
 
     private static final int TIME_OUT = 5000;
-    private static final int REQUEST_ENABLE_BT = 1;
+    public static final int REQUEST_ENABLE_BT = 1;
     private static final int SHOW_TOAST = 12;
 
     ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
